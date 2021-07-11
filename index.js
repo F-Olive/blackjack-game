@@ -58,18 +58,21 @@ let player = {
     chips: 200
 }
     //General variables
-let dealerCards = []
+let dealerArray = []
 let dealerSum = 0
-let cards = []
-let sum = 0
+let playerArray = []
+let playerSum = 0
 let hasBlackJack = false
 let isAlive = false
+let dealerAlive = false
 let message = ""
 let messageEl = document.getElementById("message-el")
 let sumEl = document.getElementById("sum-el")
 let cardsEl = document.getElementById("playerCards-el")
 let playerEl = document.getElementById("player-el")
 let dealerEl = document.getElementById("dealer-el")
+let standEl = document.getElementById("stand-el")
+let dealerSumEl = document.getElementById("dealerSum-el")
 
 playerEl.textContent = player.name + ": $" + player.chips
 
@@ -79,7 +82,7 @@ function getRandomCard() {
         deck.splice(randomDeckObj, 1)
         return deck[randomDeckObj]
     }
-        // Render the sum of the cards
+        // Render a card sum value from the relevant array
     function getSum(cardsArr) {
         let cardSum = 0
         for (let i = 0; i < cardsArr.length; i++) {
@@ -88,43 +91,51 @@ function getRandomCard() {
         return cardSum
     }
             
-     //Initialises the game   
+     //Initialises the game. Loads card variables and arrays with random cards and their .numvalues  
 function startGame() {
     isAlive = true
+    dealerAlive = true
+    
     let firstCard = getRandomCard() 
     let secondCard = getRandomCard()
     let dealCards = getRandomCard()
     
-    cards = [firstCard, secondCard]
-    dealerCards = [dealCards]
+    playerArray = [firstCard, secondCard]
+    dealerArray = [dealCards]
     
-    sum = getSum(cards)
-    dealerSum = getSum(dealCards)
+    // getSum function needs .numvalue from an array and not a variable!
+    playerSum = getSum(playerArray)
+
+    dealerSum = getSum(dealerArray)
     
     renderGame()
     }
     
-    //Renders out the player and dealer cards through a template string
+    //Renders out the player and dealer card images and card .numvalues, through template strings // etc.
 function renderGame() {
-    cardsEl.innerHTML = `${player.name}` + " "
-            for (let i = 0; i < cards.length; i++) {
-            cardsEl.innerHTML += `<img src="images/${cards[i].value}${cards[i].suit}.png">`
+    cardsEl.innerHTML = `${player.name}` + ": "
+            for (let i = 0; i < playerArray.length; i++) {
+            cardsEl.innerHTML += `<img src="images/${playerArray[i].value}${playerArray[i].suit}.png">`
             } 
      
     dealerEl.innerHTML = "Dealer: "
-    for (let i = 0; i < dealerCards.length; i++) {
-    dealerEl.innerHTML += `<img src="images/${dealerCards[i].value}${dealerCards[i].suit}.png">`  
+    for (let i = 0; i < dealerArray.length; i++) {
+    dealerEl.innerHTML += `<img src="images/${dealerArray[i].value}${dealerArray[i].suit}.png">`  
             }
-    //Player sum of cards and message
-    sumEl.textContent = "Sum: " + sum
-    if (sum <= 20) {
+        dealerSumEl.innerHTML = "Dealer Sum: " + dealerSum
+    
+    sumEl.textContent = "Player Sum: " + playerSum
+    if (playerSum <= 20) {
         message = "Do you want to draw a new card?"
-    } else if (sum === 21) {
+    } else if (playerSum === 21) {
         message = "You've got Blackjack!"
         hasBlackJack = true
+        dealerAlive = false
+        isAlive = false
     } else {
         message = "You're out of the game!"
         isAlive = false
+        dealerAlive = false
     }
     messageEl.textContent = message
 }
@@ -133,8 +144,39 @@ function renderGame() {
 function newCard() {
     if (isAlive === true && hasBlackJack === false) {
         let card = getRandomCard()
-        cards.push(card)
-        sum = getSum(cards)
+        playerArray.push(card)
+        playerSum = getSum(playerArray)
         renderGame()        
     }
 }
+
+ function declareWinner() {
+    if (playerSum > dealerSum || dealerSum > 21) {
+        
+        messageEl.textContent = player.name + " Won!"   
+    } else if (dealerSum > playerSum) {
+
+        messageEl.textContent = "Dealer Won!"
+    } else {
+
+        messageEl.textContent = "It's a tie!"
+    }
+    dealerAlive = false
+    isAlive = false
+}
+     
+function stand () {
+    if (isAlive || dealerAlive) {
+        let newDealerCard = getRandomCard()
+        dealerArray.push(newDealerCard)
+        dealerSum = getSum(dealerArray)
+        renderGame()
+        if (dealerSum < 17) {
+            stand() 
+        }
+        else if (dealerSum > 21) {
+            declareWinner()
+        } 
+    }      
+}
+    
