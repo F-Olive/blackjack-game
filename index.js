@@ -65,7 +65,9 @@ let playerSum = 0
 let hasBlackJack = false
 let isAlive = false
 let dealerAlive = false
+let betAlive = true
 let message = ""
+let betsPlaced = 0
 let messageEl = document.getElementById("message-el")
 let sumEl = document.getElementById("sum-el")
 let cardsEl = document.getElementById("playerCards-el")
@@ -73,6 +75,8 @@ let playerEl = document.getElementById("player-el")
 let dealerEl = document.getElementById("dealer-el")
 let standEl = document.getElementById("stand-el")
 let dealerSumEl = document.getElementById("dealerSum-el")
+let betEl = document.getElementById("bet-el")
+let renderBet = document.getElementById("renderBet-el")
 
 playerEl.textContent = player.name + ": $" + player.chips
 
@@ -82,7 +86,7 @@ function getRandomCard() {
         deck.splice(randomDeckObj, 1)
         return deck[randomDeckObj]
     }
-        // Render a card sum value from the relevant array
+        // Render a card sum value from the .numValue inside deck array
     function getSum(cardsArr) {
         let cardSum = 0
         for (let i = 0; i < cardsArr.length; i++) {
@@ -95,6 +99,7 @@ function getRandomCard() {
 function startGame() {
     isAlive = true
     dealerAlive = true
+    betAlive = false
     
     let firstCard = getRandomCard() 
     let secondCard = getRandomCard()
@@ -111,7 +116,7 @@ function startGame() {
     renderGame()
     }
     
-    //Renders out the player and dealer card images and card .numvalues, through template strings // etc.
+    //Renders out the player and dealer card images and card .numvalues, through template strings // Passes a message 
 function renderGame() {
     cardsEl.innerHTML = `${player.name}` + ": "
             for (let i = 0; i < playerArray.length; i++) {
@@ -129,6 +134,10 @@ function renderGame() {
         message = "Do you want to draw a new card?"
     } else if (playerSum === 21) {
         message = "You've got Blackjack!"
+        player.chips = betsPlaced * 2
+
+        playerEl.innerHTML = player.name + ": $" + player.chips
+        renderBet.innerHTML = "Bets placed: " + "$" + 0
         hasBlackJack = true
         dealerAlive = false
         isAlive = false
@@ -153,13 +162,25 @@ function newCard() {
  function declareWinner() {
     if (playerSum > dealerSum || dealerSum > 21) {
         
-        messageEl.textContent = player.name + " Won!"   
+        messageEl.textContent = player.name + " Won!"  
+        player.chips += betsPlaced * 2
+        
+        playerEl.innerHTML = player.name + ": $" + player.chips
+        renderBet.innerHTML = "Bets placed: " + "$" + 0
+        
     } else if (dealerSum > playerSum) {
-
         messageEl.textContent = "Dealer Won!"
+       
+        playerEl.innerHTML = player.name + ": $" + player.chips
+        renderBet.innerHTML = "Bets placed: " + "$" + 0
+        
     } else {
 
         messageEl.textContent = "It's a tie!"
+        player.chips += betsPlaced 
+
+        playerEl.innerHTML = player.name + ": $" + player.chips
+        renderBet.innerHTML = "Bets placed: " + "$" + 0
     }
     dealerAlive = false
     isAlive = false
@@ -174,9 +195,33 @@ function stand () {
         if (dealerSum < 17) {
             stand() 
         }
-        else if (dealerSum > 21) {
+        else {
             declareWinner()
         } 
     }      
 }
     
+function bet() {
+   if (betAlive && player.chips >= 10) {
+    betsPlaced += 10
+    renderBet.innerHTML = "Bets placed: " + "$" + betsPlaced
+    player.chips -= 10
+    playerEl.innerHTML = player.name + ": $" + player.chips
+   }
+}
+
+function reset() {
+ dealerArray = []
+ dealerSum = 0
+ playerArray = []
+ playerSum = 0
+ hasBlackJack = false
+ isAlive = false
+ dealerAlive = false
+ betAlive = true
+ message = ""
+ betsPlaced = 0
+ 
+ 
+ renderGame()
+}
